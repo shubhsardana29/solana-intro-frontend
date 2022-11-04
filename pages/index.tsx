@@ -1,3 +1,4 @@
+import * as web3 from '@solana/web3.js'
 import type { NextPage } from 'next'
 import { useState } from 'react'
 import Head from 'next/head'
@@ -10,9 +11,23 @@ const Home: NextPage = () => {
   const [address, setAddress] = useState('')
 
   const addressSubmittedHandler = (address: string) => {
-    setAddress(address)
-    setBalance(1000)
+    // first thing we wanna do here is convert the address from string to public key. Remember - the address isn't actually a string, we just represent it as one in JS.
+    try{
+    const key=new web3.PublicKey(address);
+    // We're setting the address with key.toBase58. This is the encoding of Solana addresses as strings
+    setAddress(key.toBase58())
+    // to use the key, we'll make a new connection to the JSON RPC. With the connection, we'll use the getBalance function and set the result with setBalance
+    const connection = new web3.Connection(web3.clusterApiUrl('devnet'))
+    // We're converting the balance from Lamports to SOL - the balance is returned in Lamports, not SOL.
+    connection.getBalance(key).then(balance => {
+      setBalance(balance / web3.LAMPORTS_PER_SOL)
+    })
+  } catch (error){
+    setAddress('')
+      setBalance(0)
+      alert(error)
   }
+ }
 
   return (
     <div className={styles.App}>
