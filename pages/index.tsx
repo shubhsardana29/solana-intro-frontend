@@ -9,6 +9,7 @@ import AddressForm from '../components/AddressForm'
 const Home: NextPage = () => {
   const [balance, setBalance] = useState(0)
   const [address, setAddress] = useState('')
+  const [isExecutable, setIsExecutable] = useState(false);
 
   const addressSubmittedHandler = (address: string) => {
     // first thing we wanna do here is convert the address from string to public key. Remember - the address isn't actually a string, we just represent it as one in JS.
@@ -22,6 +23,10 @@ const Home: NextPage = () => {
     connection.getBalance(key).then(balance => {
       setBalance(balance / web3.LAMPORTS_PER_SOL)
     })
+    connection.getAccountInfo(key).then(accountInfo => {
+      setIsExecutable(accountInfo?.executable ?? false);
+    })
+
   } catch (error){
     setAddress('')
       setBalance(0)
@@ -38,6 +43,7 @@ const Home: NextPage = () => {
         <AddressForm handler={addressSubmittedHandler} />
         <p>{`Address: ${address}`}</p>
         <p>{`Balance: ${balance} SOL`}</p>
+        <p>{`Is it executable? ${isExecutable ? 'Yes' : 'No'}`}</p>
       </header>
     </div>
   )
